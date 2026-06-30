@@ -32,38 +32,38 @@ export default function Dashboard() {
   if (error && error !== 'Unauthorized') return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen p-8 max-w-5xl mx-auto">
+    <div className="min-h-[calc(100vh-160px)] p-8 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-10">
-        <h1 className="text-4xl font-bold text-white">Your <span className="text-[var(--color-gold)]">Dashboard</span></h1>
-        <Link href="/interview/setup" className="btn-gold px-6 py-3 rounded-xl">
+        <h1 className="text-4xl font-bold text-gray-900">Your <span className="text-[var(--color-primary)]">Dashboard</span></h1>
+        <Link href="/interview/setup" className="btn-primary px-6 py-3 rounded-xl">
           + New Interview
         </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {interviews.length === 0 ? (
-          <div className="col-span-full glass-panel p-10 text-center rounded-2xl text-gray-400">
+          <div className="col-span-full bg-white border border-gray-200 shadow-sm p-10 text-center rounded-2xl text-gray-500">
             <p className="text-xl mb-4">No interviews yet.</p>
-            <Link href="/interview/setup" className="text-[var(--color-gold)] hover:underline">Start your first mock interview now</Link>
+            <Link href="/interview/setup" className="text-[var(--color-primary)] font-medium hover:underline">Start your first mock interview now</Link>
           </div>
         ) : (
           interviews.map((interview: any) => (
-            <div key={interview.id} className="glass-panel p-6 rounded-2xl flex flex-col">
+            <div key={interview.id} className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-6 rounded-2xl flex flex-col">
               <div className="flex justify-between items-start mb-4">
-                <span className="bg-white/10 px-3 py-1 rounded text-sm text-[var(--color-gold-light)]">{interview.interviewType}</span>
-                <span className="text-xs text-gray-500">{new Date(interview.startedAt).toLocaleDateString()}</span>
+                <span className="bg-indigo-50 text-[var(--color-primary)] px-3 py-1 rounded text-sm font-medium">{interview.interviewType}</span>
+                <span className="text-xs text-gray-400 font-medium">{new Date(interview.startedAt).toLocaleDateString()}</span>
               </div>
-              <p className="text-gray-300 mb-6 flex-grow">
-                Status: {interview.status}
+              <p className="text-gray-600 mb-6 flex-grow font-medium">
+                Status: <span className="capitalize">{interview.status}</span>
               </p>
               {interview.reports && interview.reports.length > 0 ? (
-                <div className="mt-4 p-4 bg-black/30 rounded-xl">
-                  <p className="text-sm text-gray-400 mb-1">Score</p>
-                  <p className="text-2xl font-bold text-white">{interview.reports[0].overallScore}/100</p>
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1 font-medium">Score</p>
+                  <p className="text-2xl font-bold text-gray-900">{interview.reports[0].overallScore}<span className="text-sm text-gray-400 font-normal">/100</span></p>
                 </div>
               ) : (
-                <div className="mt-4 p-4 bg-black/30 rounded-xl flex items-center justify-center">
-                  <span className="text-gray-500 text-sm">No report generated</span>
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center">
+                  <span className="text-gray-400 text-sm font-medium">No report generated</span>
                 </div>
               )}
             </div>

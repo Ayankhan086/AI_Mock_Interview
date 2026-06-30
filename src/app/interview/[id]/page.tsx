@@ -197,28 +197,28 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden relative">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vh] h-[80vh] bg-[var(--color-gold)] opacity-5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div className="min-h-[calc(100vh-160px)] flex flex-col items-center justify-center p-4 overflow-hidden relative">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vh] h-[80vh] bg-indigo-50 opacity-50 blur-[120px] rounded-full pointer-events-none"></div>
       
       <div className="z-10 text-center flex flex-col items-center">
         {/* Pulsating Orb Visualizer */}
-        <div className={`w-40 h-40 rounded-full mb-12 flex items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(203,163,88,0.2)] border-2 border-white/5 bg-black/50 ${isAiSpeaking ? 'scale-110 shadow-[0_0_80px_rgba(203,163,88,0.5)] border-[var(--color-gold)]/50' : 'scale-100'} ${isRecording ? 'border-[var(--color-gold)]/20 shadow-[0_0_40px_rgba(255,255,255,0.1)]' : ''}`}>
+        <div className={`w-40 h-40 rounded-full mb-12 flex items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(79,70,229,0.1)] border-2 border-indigo-100 bg-white ${isAiSpeaking ? 'scale-110 shadow-[0_0_80px_rgba(79,70,229,0.3)] border-[var(--color-primary)]' : 'scale-100'} ${isRecording ? 'border-[var(--color-primary)] shadow-[0_0_40px_rgba(79,70,229,0.2)]' : ''}`}>
           
           {isAiSpeaking && (
             <div className="flex gap-2 items-center h-16">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="w-2 bg-[var(--color-gold)] rounded-full visualizer-bar" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                <div key={i} className="w-2 bg-[var(--color-primary)] rounded-full visualizer-bar" style={{ animationDelay: `${i * 0.1}s` }}></div>
               ))}
             </div>
           )}
           
           {!isAiSpeaking && (
-            <div className="w-4 h-4 rounded-full bg-[var(--color-gold)] opacity-50 animate-pulse"></div>
+            <div className="w-4 h-4 rounded-full bg-[var(--color-primary)] opacity-50 animate-pulse"></div>
           )}
         </div>
         
-        <h2 className="text-2xl font-light text-white mb-2">{statusText}</h2>
-        <p className="text-gray-400 max-w-md text-sm mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{statusText}</h2>
+        <p className="text-gray-500 max-w-md text-sm mb-8 font-medium">
           {isAiSpeaking ? 'AI is speaking. Please listen.' : (isRecording ? 'Speak now. The AI is listening to your answer.' : 'Microphone is inactive.')}
         </p>
 
@@ -244,7 +244,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
                   setFallbackText('');
                 }
               }}
-              className="btn-gold px-4 py-2 rounded-xl text-sm font-medium"
+              className="btn-primary px-4 py-2 rounded-xl text-sm font-medium"
             >
               Send
             </button>
@@ -255,7 +255,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           <button 
             onClick={toggleRecording} 
             disabled={isAiSpeaking}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isRecording ? 'bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500/30' : 'glass-panel text-white hover:bg-white/10'}`}
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isRecording ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm'}`}
           >
             {isRecording ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -266,7 +266,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           
           <button 
             onClick={handleEndInterview} 
-            className="px-6 py-4 rounded-full glass-panel text-gray-300 hover:text-white hover:bg-white/10 transition-all font-medium text-sm"
+            className="px-6 py-4 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all font-medium text-sm shadow-sm"
           >
             End Interview
           </button>
