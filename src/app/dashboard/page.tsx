@@ -58,8 +58,16 @@ export default function Dashboard() {
               </p>
               {interview.reports && interview.reports.length > 0 ? (
                 <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1 font-medium">Score</p>
-                  <p className="text-2xl font-bold text-gray-900">{interview.reports[0].overallScore}<span className="text-sm text-gray-400 font-normal">/100</span></p>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1 font-medium">Score</p>
+                      <p className="text-2xl font-bold text-gray-900">{interview.reports[0].overallScore}<span className="text-sm text-gray-400 font-normal">/100</span></p>
+                    </div>
+                    <Link href={`/report/${interview.reports[0].id}`} className="text-sm font-medium text-[var(--color-primary)] hover:underline flex items-center gap-1">
+                      View Detailed Report
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center">

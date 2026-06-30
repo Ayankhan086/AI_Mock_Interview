@@ -40,17 +40,26 @@ export async function POST(req: Request) {
     const transcript = interview.transcript as { role: string, content: string }[] || [];
     const formattedTranscript = transcript.map(t => `${t.role.toUpperCase()}: ${t.content}`).join('\n\n');
 
-    const systemPrompt = `You are an expert HR Manager and Technical Interviewer.
-Please analyze the following interview transcript and generate a feedback report.
-The interview was for a ${interview.interviewType} type for a ${interview.user.jobRole || 'Professional'} role.
+    const systemPrompt = `You are an expert HR Manager, Career Coach, and Technical Interviewer.
+Please analyze the following interview transcript and generate a comprehensive, highly detailed feedback report.
+The interview was for a ${interview.interviewType} interview type targeting a ${interview.user.jobRole || 'Professional'} role with a ${interview.user.experienceLevel || 'Mid-Level'} experience level.
 
-Return the report in EXACTLY this JSON format without markdown code blocks:
+Your feedback MUST be specific, actionable, and detail-oriented. Avoid generic advice. Quote specific answers from the transcript to highlight strengths or areas of improvement.
+
+Return the report in EXACTLY this JSON format without any markdown code blocks:
 {
-  "overallScore": <integer from 0 to 100>,
-  "strengths": ["string", "string"],
-  "weaknesses": ["string", "string"],
-  "detailedFeedback": "A markdown formatted detailed feedback."
-}`;
+  "overallScore": <integer from 0 to 100 representing the candidate's performance>,
+  "strengths": ["Specific strength 1 with context", "Specific strength 2 with context"],
+  "weaknesses": ["Specific area for improvement 1", "Specific area for improvement 2"],
+  "detailedFeedback": "A comprehensive markdown formatted string containing the full report."
+}
+
+Guidelines for 'detailedFeedback' markdown:
+- Use H3 (###) headers for sections.
+- Include a 'Performance Overview' section.
+- Include a 'Key Competencies' section breaking down Communication, Problem Solving, and Role-specific skills.
+- Include an 'Actionable Next Steps' section giving the candidate 2-3 specific things to practice.
+- Use bold text, bullet points, and blockquotes where appropriate to make the report readable and highly professional.`;
 
     const response = await llm.invoke([
       new SystemMessage(systemPrompt),
