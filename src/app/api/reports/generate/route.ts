@@ -69,13 +69,22 @@ Guidelines for 'detailedFeedback' markdown:
     let parsedResponse;
     try {
       let content = response.content as string;
-      if (content.startsWith('\`\`\`json')) {
-        content = content.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        parsedResponse = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No JSON found in response');
       }
-      parsedResponse = JSON.parse(content);
     } catch (e) {
       console.error('Error parsing LLM response:', response.content);
-      return NextResponse.json({ error: 'Failed to parse report' }, { status: 500 });
+      
+      // Fallback response if AI failed to return valid JSON
+      parsedResponse = {
+        overallScore: 0,
+        strengths: ["None identified"],
+        weaknesses: ["AI was unable to process the transcript."],
+        detailedFeedback: "### Error\nThe AI failed to generate a properly formatted report for this session. This can happen if the transcript was too short or the AI encountered an internal error."
+      };
     }
 
     const report = await prisma.report.create({

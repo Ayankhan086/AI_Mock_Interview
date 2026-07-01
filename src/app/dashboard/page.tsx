@@ -54,7 +54,7 @@ export default function Dashboard() {
                 <span className="text-xs text-gray-400 font-medium">{new Date(interview.startedAt).toLocaleDateString()}</span>
               </div>
               <p className="text-gray-600 mb-6 flex-grow font-medium">
-                Status: <span className="capitalize">{interview.status}</span>
+                Status: <span className="capitalize">{interview.status === 'InProgress' ? 'Incomplete' : interview.status}</span>
               </p>
               {interview.reports && interview.reports.length > 0 ? (
                 <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
