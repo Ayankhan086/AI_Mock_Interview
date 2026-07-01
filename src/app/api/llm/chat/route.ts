@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       interviewType: interview.interviewType,
       userName: interview.user.name,
       jobRole: interview.user.jobRole || 'Professional',
+      language: (interview as any).language || 'en-US',
       questionCount: Math.floor(transcript.length / 2),
     };
 
@@ -65,8 +66,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ response: latestAiMessage }, { status: 200 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('LLM Chat Error:', error);
+    if (error?.message?.includes('429') || error?.message?.includes('RateLimitQuotaExhaustedError') || error?.status === 429) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please wait a minute.' }, { status: 429 });
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

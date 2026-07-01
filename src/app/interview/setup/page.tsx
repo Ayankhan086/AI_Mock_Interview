@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function InterviewSetup() {
   const router = useRouter();
   const [interviewType, setInterviewType] = useState('Behavioral');
+  const [language, setLanguage] = useState('en-US');
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
@@ -14,7 +15,7 @@ export default function InterviewSetup() {
       const res = await fetch('/api/interviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interviewType })
+        body: JSON.stringify({ interviewType, language })
       });
       
       if (res.ok) {
@@ -48,6 +49,22 @@ export default function InterviewSetup() {
               <span className="text-lg text-gray-800 font-medium">{type}</span>
             </label>
           ))}
+        </div>
+        
+        <div className="mb-10 text-left">
+          <label className="block text-sm font-bold text-gray-700 mb-2">Interview Language</label>
+          <select 
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="w-full p-4 rounded-xl border border-gray-200 bg-white text-gray-800 text-lg shadow-sm focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] outline-none transition-all"
+          >
+            <option value="en-US">English (US)</option>
+            <option value="es-ES">Spanish (Spain)</option>
+            <option value="fr-FR">French (France)</option>
+            <option value="de-DE">German (Germany)</option>
+            <option value="hi-IN">Hindi (India)</option>
+            <option value="ur-PK">Urdu (Pakistan)</option>
+          </select>
         </div>
         
         <button onClick={handleStart} disabled={loading} className="btn-primary w-full p-4 rounded-xl text-lg shadow-sm">

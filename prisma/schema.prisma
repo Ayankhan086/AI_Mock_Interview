@@ -22,6 +22,7 @@ model InterviewSession {
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   interviewType String // Behavioral, Technical, System Design, HR
+  language      String    @default("en-US")
   status        String    @default("InProgress") // InProgress, Completed
   startedAt     DateTime  @default(now())
   endedAt       DateTime?

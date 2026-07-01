@@ -20,6 +20,10 @@ export const GraphState = Annotation.Root({
     reducer: (x, y) => y ?? x,
     default: () => 'Software Engineer',
   }),
+  language: Annotation<string>({
+    reducer: (x, y) => y ?? x,
+    default: () => 'en-US',
+  }),
   questionCount: Annotation<number>({
     reducer: (x, y) => y ?? x,
     default: () => 0,
@@ -27,17 +31,19 @@ export const GraphState = Annotation.Root({
 });
 
 const llm = new ChatGoogleGenerativeAI({
-  model: 'gemini-2.5-flash',
+  model: 'gemini-3.5-flash',
   maxOutputTokens: 2048,
   temperature: 0.7,
   apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || 'missing-key',
 });
 
 async function generateResponse(state: typeof GraphState.State) {
-  const { messages, interviewType, userName, jobRole, questionCount } = state;
+  const { messages, interviewType, userName, jobRole, language, questionCount } = state;
   
   const systemPrompt = `You are an expert AI Interviewer conducting a ${interviewType} interview for a ${jobRole} position with a candidate named ${userName}.
 Your goal is to conduct a realistic, dynamic voice interview.
+
+CRITICAL INSTRUCTION: You MUST speak strictly in the following language/locale: ${language}. Under no circumstances should you speak English unless the requested language is English.
 
 Guidelines:
 1. Speak concisely. This is a voice conversation. DO NOT output markdown, bullet points, or long essays. Keep responses to 1-3 short sentences.

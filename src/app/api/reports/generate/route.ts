@@ -5,7 +5,7 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 
 const llm = new ChatGoogleGenerativeAI({
-  model: 'gemini-2.5-flash',
+  model: 'gemini-3.5-flash',
   maxOutputTokens: 2048,
   temperature: 0.2,
   apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || 'missing-key',
@@ -38,28 +38,60 @@ export async function POST(req: Request) {
     }
 
     const transcript = interview.transcript as { role: string, content: string }[] || [];
+    
+    // Early exit if the user didn't say anything
+    if (transcript.length === 0) {
+      const fallbackReport = await prisma.report.create({
+        data: {
+          sessionId: interview.id,
+          overallScore: 0,
+          strengths: ["None (Interview ended before candidate spoke)"],
+          weaknesses: ["Did not participate"],
+          detailedFeedback: "### Performance Overview\nThe candidate ended the interview before answering any questions.\n\n### Actionable Next Steps\n- Ensure your microphone is working and permissions are granted.\n- Try again when you are ready to speak with the AI."
+        }
+      });
+
+      if (interview.status !== 'Completed') {
+        await prisma.interviewSession.update({
+          where: { id: interview.id },
+          data: { status: 'Completed', endedAt: new Date() }
+        });
+      }
+      
+      return NextResponse.json({ report: fallbackReport }, { status: 201 });
+    }
+
     const formattedTranscript = transcript.map(t => `${t.role.toUpperCase()}: ${t.content}`).join('\n\n');
+
+    const language = (interview as any).language || 'en-US';
 
     const systemPrompt = `You are an expert HR Manager, Career Coach, and Technical Interviewer.
 Please analyze the following interview transcript and generate a comprehensive, highly detailed feedback report.
 The interview was for a ${interview.interviewType} interview type targeting a ${interview.user.jobRole || 'Professional'} role with a ${interview.user.experienceLevel || 'Mid-Level'} experience level.
 
+CRITICAL INSTRUCTION: You MUST write your ENTIRE feedback report strictly in the following language/locale: ${language}. Do not use English unless the requested language is English.
+
 Your feedback MUST be specific, actionable, and detail-oriented. Avoid generic advice. Quote specific answers from the transcript to highlight strengths or areas of improvement.
 
-Return the report in EXACTLY this JSON format without any markdown code blocks:
-{
-  "overallScore": <integer from 0 to 100 representing the candidate's performance>,
-  "strengths": ["Specific strength 1 with context", "Specific strength 2 with context"],
-  "weaknesses": ["Specific area for improvement 1", "Specific area for improvement 2"],
-  "detailedFeedback": "A comprehensive markdown formatted string containing the full report."
-}
+Output your report using the following EXACT structure. Do not use JSON. Use these exact tags:
 
-Guidelines for 'detailedFeedback' markdown:
-- Use H3 (###) headers for sections.
-- Include a 'Performance Overview' section.
-- Include a 'Key Competencies' section breaking down Communication, Problem Solving, and Role-specific skills.
-- Include an 'Actionable Next Steps' section giving the candidate 2-3 specific things to practice.
-- Use bold text, bullet points, and blockquotes where appropriate to make the report readable and highly professional.`;
+<score>
+[integer from 0 to 100]
+</score>
+
+<strengths>
+- [specific strength 1]
+- [specific strength 2]
+</strengths>
+
+<weaknesses>
+- [specific weakness 1]
+- [specific weakness 2]
+</weaknesses>
+
+<detailedFeedback>
+[Write your comprehensive markdown report here. Guidelines: Use H3 (###) headers for sections. Include a 'Performance Overview' section. Include a 'Key Competencies' section breaking down Communication, Problem Solving, and Role-specific skills. Include an 'Actionable Next Steps' section giving the candidate 2-3 specific things to practice. Use bold text, bullet points, and blockquotes where appropriate to make the report readable and highly professional.]
+</detailedFeedback>`;
 
     const response = await llm.invoke([
       new SystemMessage(systemPrompt),
@@ -68,22 +100,38 @@ Guidelines for 'detailedFeedback' markdown:
 
     let parsedResponse;
     try {
-      let content = response.content as string;
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsedResponse = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found in response');
+      const content = response.content as string;
+      
+      const scoreMatch = content.match(/<score>([\s\S]*?)<\/score>/);
+      const strengthsMatch = content.match(/<strengths>([\s\S]*?)<\/strengths>/);
+      const weaknessesMatch = content.match(/<weaknesses>([\s\S]*?)<\/weaknesses>/);
+      const feedbackMatch = content.match(/<detailedFeedback>([\s\S]*?)<\/detailedFeedback>/);
+      
+      if (!scoreMatch || !feedbackMatch) {
+         throw new Error("Missing required XML tags in LLM response");
       }
+      
+      const overallScore = parseInt(scoreMatch[1].trim(), 10) || 0;
+      
+      const strengthsText = strengthsMatch ? strengthsMatch[1].trim() : "No strengths identified";
+      const strengths = strengthsText.split('\n').map(s => s.replace(/^[-*]\s*/, '').trim()).filter(Boolean);
+      
+      const weaknessesText = weaknessesMatch ? weaknessesMatch[1].trim() : "No weaknesses identified";
+      const weaknesses = weaknessesText.split('\n').map(s => s.replace(/^[-*]\s*/, '').trim()).filter(Boolean);
+      
+      const detailedFeedback = feedbackMatch[1].trim();
+
+      parsedResponse = { overallScore, strengths, weaknesses, detailedFeedback };
+      
     } catch (e) {
       console.error('Error parsing LLM response:', response.content);
       
-      // Fallback response if AI failed to return valid JSON
+      // Fallback response if AI failed to return valid tags
       parsedResponse = {
         overallScore: 0,
         strengths: ["None identified"],
         weaknesses: ["AI was unable to process the transcript."],
-        detailedFeedback: "### Error\nThe AI failed to generate a properly formatted report for this session. This can happen if the transcript was too short or the AI encountered an internal error."
+        detailedFeedback: "### Error\nThe AI failed to generate a properly formatted report for this session. This is usually caused by an LLM parsing error or too short of a transcript."
       };
     }
 

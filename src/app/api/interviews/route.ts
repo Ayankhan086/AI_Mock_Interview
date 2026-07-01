@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { interviewType } = await req.json();
+    const { interviewType, language = 'en-US' } = await req.json();
     if (!interviewType) {
       return NextResponse.json({ error: 'Interview type is required' }, { status: 400 });
     }
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
       data: {
         userId: session.id,
         interviewType,
+        language,
         status: 'InProgress',
         transcript: []
       },
