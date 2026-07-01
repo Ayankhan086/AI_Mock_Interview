@@ -14,10 +14,10 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const report = await prisma.report.findFirst({
     where: { 
       id,
-      interviewSession: { userId: session.id }
+      session: { userId: session.id }
     },
     include: {
-      interviewSession: true
+      session: true
     }
   });
   
